@@ -14,6 +14,8 @@ class ResultadoFalso:
 
 
 class OraculoFalso:
+    """Oráculo determinista: la precisión depende de coincidir con el objetivo."""
+
     def __init__(self, objetivo, ranuras):
         self.objetivo = objetivo
         self.ranuras = ranuras
@@ -24,12 +26,15 @@ class OraculoFalso:
         aciertos = sum(config[r] == self.objetivo[r] for r in self.ranuras)
         precision = aciertos / len(self.ranuras)
         n = len(instancias)
-        fallos = 0 if precision == 1.0 else n
-        trazas = (
-            []
-            if fallos == 0
-            else [{"id": instancias[0]["id"], "violo": "demo", "salida": ""}]
-        )
+        correctas = round(n * precision)
+        trazas = [
+            {
+                "id": item["id"],
+                "violo": "restriccion_demo",
+                "salida": "respuesta simulada",
+            }
+            for item in instancias[correctas:]
+        ]
         return ResultadoFalso(precision, n, trazas)
 
 
@@ -62,17 +67,19 @@ class TestCoordinateSearch(unittest.TestCase):
         optimizador = CoordinateSearch(
             self.oraculo, self.catalogo, self.ranuras
         )
-        invalida = {"rol": 2, "formato": 0, "temperatura": 0.0}
         with self.assertRaises(ValueError):
-            optimizador.validar_configuracion(invalida)
+            optimizador.validar_configuracion(
+                {"rol": 2, "formato": 0, "temperatura": 0.0}
+            )
 
     def test_rechaza_booleano_como_indice(self):
         optimizador = CoordinateSearch(
             self.oraculo, self.catalogo, self.ranuras
         )
-        invalida = {"rol": True, "formato": 0, "temperatura": 0.0}
         with self.assertRaises(TypeError):
-            optimizador.validar_configuracion(invalida)
+            optimizador.validar_configuracion(
+                {"rol": True, "formato": 0, "temperatura": 0.0}
+            )
 
     def test_checkpoint_persistido(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -84,7 +91,7 @@ class TestCoordinateSearch(unittest.TestCase):
                 historial_path=ruta,
             )
             inicial = {"rol": 0, "formato": 0, "temperatura": 0.0}
-            optimizador.optimizar(
+            mejor, _ = optimizador.optimizar(
                 self.datos,
                 inicial,
                 screen_n=3,
@@ -94,18 +101,16 @@ class TestCoordinateSearch(unittest.TestCase):
             )
             contenido = json.loads(ruta.read_text(encoding="utf-8"))
             self.assertTrue(contenido["evaluaciones"])
-            self.assertEqual(
-                contenido["configuracion_actual"],
-                {"rol": 1, "formato": 1, "temperatura": 0.0},
-            )
+            self.assertEqual(contenido["configuracion_actual"], mejor)
 
     def test_no_permite_temperatura_no_declarada(self):
         optimizador = CoordinateSearch(
             self.oraculo, self.catalogo, self.ranuras, temperaturas=(0.0,)
         )
-        invalida = {"rol": 0, "formato": 0, "temperatura": 0.3}
         with self.assertRaises(ValueError):
-            optimizador.validar_configuracion(invalida)
+            optimizador.validar_configuracion(
+                {"rol": 0, "formato": 0, "temperatura": 0.3}
+            )
 
 
 if __name__ == "__main__":
