@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+*.tmp
+
+# Cachés locales de consultas al modelo: se conservan fuera de Git.
+cache_oraculo*.json
+cache_evaluacion*.json
+
+# Archivos temporales de ejecuciones de Colab.
+content/
