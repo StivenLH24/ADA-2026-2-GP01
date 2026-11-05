@@ -87,3 +87,42 @@ La ejecución parcial no debe reportarse como búsqueda completada. La celda no 
 ## Reproducibilidad
 
 Los parámetros registrados de calibración son: modelo Qwen/Qwen3-1.7B, temperatura 0.0, semilla 1 para el oráculo y semilla 2026 para seleccionar la muestra de 40 instancias.
+
+
+## Segunda ejecución: Coordinate Search sobre las 100 instancias
+
+Esta ejecución es independiente de la búsqueda exploratoria anterior. Se inició en `01_busqueda_G1.ipynb` con Qwen/Qwen3-1.7B, temperatura 0.0, semilla 2026, screening de 10 instancias, dos finalistas por coordenada y una ronda.
+
+Configuración inicial:
+
+```json
+{
+  "rol": 1,
+  "estrategia": 5,
+  "formato": 1,
+  "estilo": 3,
+  "cierre": 6,
+  "temperatura": 0.0
+}
+```
+
+El baseline obtuvo **9/100 = 9,0 %**.
+
+| Coordenada | Screening | Refinamiento sobre 100 | Decisión |
+|---|---|---|---|
+| rol | Los siete candidatos alternativos obtuvieron 0/10 | Índice 0: 7/100; índice 2: 8/100 | Se conserva rol=1 |
+| estrategia | Los siete candidatos alternativos obtuvieron 0/10 | Índice 0: 6/100; índice 1: 6/100 | Se conserva estrategia=5 |
+| formato | Índices 0, 2, 3, 4, 5 y 6: 0/10; índice 7: 1/10 | El refinamiento del finalista todavía no había terminado al interrumpirse la sesión | Pendiente de reanudación |
+| estilo | No iniciado | No iniciado | Pendiente |
+| cierre | No iniciado | No iniciado | Pendiente |
+
+Al momento de la interrupción, el historial persistido contenía 26 evaluaciones completas y dos coordenadas resumidas (`rol` y `estrategia`). El screening de `formato` estaba completo. La llamada de refinamiento del primer finalista se había interrumpido antes de completar las 90 instancias que faltaban después del screening; esa ejecución no aparece como evaluación completa en el historial, pero las respuestas guardadas por lotes permanecen en la caché del oráculo.
+
+La reanudación debe comenzar por `formato`, calcular los finalistas a partir del screening ya registrado y completar sus refinamientos. Después debe continuar con `estilo` y `cierre`. No se deben repetir las coordenadas ya resumidas. El módulo `src/reanudador.py` implementa esta recuperación y utiliza el historial y la caché persistidos en Google Drive.
+
+Archivos persistentes usados en Colab:
+
+- `/content/drive/MyDrive/ADA_G1/cache_oraculo_G1.json`
+- `/content/drive/MyDrive/ADA_G1/historial_coordinate_search_G1.json`
+
+Estos valores son un checkpoint intermedio, no la configuración final de entrega. No se ha evaluado todavía ninguna configuración final sobre las 87 instancias de validación y no se afirma optimalidad global.
