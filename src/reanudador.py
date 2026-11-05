@@ -130,7 +130,7 @@ def reanudar_busqueda_g1(optimizador, datos_busqueda, *, screen_n=10,
 
         indice_actual = actual[ranura]
         candidatos = []
-        print(f"\\n========== REANUDANDO {ranura.upper()} ==========")
+        print(f"\n========== REANUDANDO {ranura.upper()} ==========")
 
         for indice in range(len(optimizador.catalogo[ranura])):
             if indice == indice_actual:
@@ -190,7 +190,7 @@ def reanudar_busqueda_g1(optimizador, datos_busqueda, *, screen_n=10,
             f"{precision_antes:.1%} -> {precision_actual:.1%}"
         )
 
-    print("\\n========== RONDA RECUPERADA ==========")
+    print("\n========== RONDA RECUPERADA ==========")
     print("Configuración:", actual)
     print(f"Precisión en búsqueda: {precision_actual:.1%}")
     print("Evaluaciones registradas:", len(optimizador.historial))
