@@ -1,0 +1,12 @@
+{
+  "grupo": "G1",
+  "config": {
+    "rol": 1,
+    "estrategia": 5,
+    "formato": 1,
+    "estilo": 3,
+    "cierre": 6,
+    "temperatura": 0
+  },
+  "semana": 2
+}
