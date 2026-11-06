@@ -1,6 +1,11 @@
-# Registro experimental inicial — Grupo G1
+# Registro experimental — Grupo G1
 
-Este documento registra únicamente resultados que aparecen en el notebook de exploración exportado desde Google Colab. No representa todavía la ejecución final ni la configuración de entrega.
+**Integrante:** Johan Stiven Osorio Grisales  
+**Grupo:** G1  
+**Semana:** 2  
+**Proyecto:** Proyecto Oráculo — Análisis y Diseño de Algoritmos (2026-B)
+
+Este documento distingue la exploración inicial de la ejecución formal de búsqueda por coordenadas y su validación. Ningún resultado se presenta como óptimo global demostrado.
 
 ## Entorno comprobado
 
@@ -11,20 +16,21 @@ Este documento registra únicamente resultados que aparecen en el notebook de ex
 - CUDA disponible: sí.
 - Modelo: Qwen/Qwen3-1.7B.
 - Dispositivo del modelo: cuda:0.
-- Memoria GPU registrada después de cargar el modelo: aproximadamente 3.2 GB.
+- Memoria GPU registrada después de cargar el modelo: aproximadamente 3.4 GB.
 
 ## Datos y espacio de búsqueda
 
 - Registros visibles: 450.
 - Instancias de búsqueda: 100.
 - Instancias de validación: 87.
-- Instancias descartadas por la función dividir: 263.
+- Instancias descartadas por la función `dividir`: 263.
 - Ranuras: rol, estrategia, formato, estilo y cierre.
 - Alternativas por ranura: 8.
-- Temperatura usada en los experimentos registrados: 0.0.
+- Temperatura usada: 0.0.
 - Espacio de configuraciones a temperatura 0.0: 8^5 = 32.768.
+- Precisión: proporción de instancias que satisfacen todas las restricciones (evaluación todo-o-nada por instancia).
 
-## Calibración
+## Calibración exploratoria anterior
 
 ### Primera muestra
 
@@ -41,59 +47,50 @@ La muestra se seleccionó con `random.Random(2026)` y contiene los IDs:
 | LIMPIA | 5 | 35 | 12,5 % |
 | PESADA | 0 | 40 | 0,0 % |
 
-LIMPIA superó las instancias 372, 518, 526, 537 y 471. PESADA no superó ninguna instancia de esta muestra.
+Esta calibración pertenece a la etapa exploratoria previa y no debe confundirse con la búsqueda formal sobre las 100 instancias.
 
-### Primeras familias de fallo observadas en LIMPIA
+## Búsqueda por coordenadas — ejecución completada
 
-| Identificador | Frecuencia |
-|---|---:|
-| keywords:keyword_specific_position | 4 |
-| new:copy_span_idx | 3 |
-| copy:copy | 3 |
-| last_word:last_word_sent | 3 |
-| first_word:first_word_sent | 2 |
-| first_word:first_word_answer | 2 |
-| keywords:frequency | 2 |
-| copy:repeat_phrase | 2 |
-| paragraphs:paragraphs | 2 |
+### Parámetros
 
-El oráculo registra la primera restricción incumplida por instancia; estas frecuencias no representan todos los incumplimientos posibles de cada respuesta.
+- Método: búsqueda por coordenadas con evaluación escalonada.
+- Configuración inicial reproducible: `rol=1`, `estrategia=5`, `formato=1`, `estilo=3`, `cierre=6`, `temperatura=0.0`.
+- Semilla: 2026.
+- Screening: 10 instancias por alternativa.
+- Finalistas refinados: 2 por ranura.
+- Refinamiento y aceptación: conjunto completo de 100 instancias.
+- Rondas: 1.
+- Criterio de aceptación: aceptar un cambio solo si su precisión sobre las 100 instancias es estrictamente superior a la precisión actual.
+- Criterio de parada: finalizar la ronda sin mejoras aceptadas.
 
-## Búsqueda por coordenadas: ejecución parcial
+### Baseline
 
-En el notebook se inició una búsqueda de una ronda con LIMPIA como configuración inicial. La muestra de optimización era la misma muestra de 40 instancias de calibración, no el conjunto completo de 100 instancias de búsqueda.
+La configuración inicial obtuvo 9/100 instancias correctas, equivalente a 9,0 %.
 
-| Etapa | Resultado registrado |
-|---|---|
-| Baseline LIMPIA | 12,5 % sobre 40 instancias |
-| Rol | El índice cambió de 5 a 2; la precisión refinada pasó a 20,0 % |
-| Estrategia | No se aceptó un cambio; permaneció en índice 2 |
-| Formato | No se aceptó un cambio; permaneció en índice 0 |
-| Estilo | El screening comenzó, pero la celda se exportó antes de completar esta coordenada |
-| Cierre | No alcanzado en la ejecución exportada |
-| Gráfica de convergencia | No generada |
+### Resultados del refinamiento
 
-La ejecución parcial no debe reportarse como búsqueda completada. La celda no llegó a construir las tablas finales de candidatos ni a guardar un historial completo de la búsqueda.
+| Ranura | Índice candidato | Correctas / 100 | Precisión | Decisión |
+|---|---:|---:|---:|---|
+| rol | 0 | 7 | 7,0 % | Rechazado |
+| rol | 2 | 8 | 8,0 % | Rechazado |
+| estrategia | 0 | 6 | 6,0 % | Rechazado |
+| estrategia | 1 | 6 | 6,0 % | Rechazado |
+| formato | 7 | 5 | 5,0 % | Rechazado |
+| formato | 0 | 9 | 9,0 % | Rechazado (igual al baseline, no mejora estricta) |
+| estilo | 0 | 8 | 8,0 % | Rechazado |
+| estilo | 1 | 6 | 6,0 % | Rechazado |
+| cierre | 0 | 4 | 4,0 % | Rechazado |
+| cierre | 1 | 7 | 7,0 % | Rechazado |
 
-## Limitaciones y próximos pasos
+En el screening, las alternativas se filtraron con 10 instancias. Como el oráculo puntúa cada instancia de forma todo-o-nada, varias alternativas obtuvieron 0/10; el refinamiento sobre el conjunto completo permitió distinguirlas. El índice 0 de formato empató el baseline con 9/100 y no se aceptó porque el criterio estaba definido como mejora estricta.
 
-1. Repetir la búsqueda usando las 100 instancias de `busqueda` como conjunto de refinamiento y aceptación.
-2. Mantener una muestra de screening reproducible, pero aceptar cambios solo después de compararlos sobre las 100 instancias.
-3. Guardar un registro persistente después de cada evaluación y conservar la caché del oráculo fuera del directorio temporal de Colab (por ejemplo, en Google Drive).
-4. Evaluar la configuración final en `validacion`, sin usar ese resultado para seguir seleccionando candidatos.
-5. No afirmar optimalidad global: Coordinate Search es una heurística.
-6. Formalizar rigurosamente la reducción desde 3-SAT exigida por la guía específica de G1. Este registro no contiene una demostración de NP-dureza.
+### Resultado de búsqueda
 
-## Reproducibilidad
-
-Los parámetros registrados de calibración son: modelo Qwen/Qwen3-1.7B, temperatura 0.0, semilla 1 para el oráculo y semilla 2026 para seleccionar la muestra de 40 instancias.
-
-
-## Segunda ejecución: Coordinate Search sobre las 100 instancias
-
-Esta ejecución es independiente de la búsqueda exploratoria anterior. Se inició en `01_busqueda_G1.ipynb` con Qwen/Qwen3-1.7B, temperatura 0.0, semilla 2026, screening de 10 instancias, dos finalistas por coordenada y una ronda.
-
-Configuración inicial:
+- Evaluaciones completas: 46.
+- Coordenadas resumidas: 5/5.
+- Cambios aceptados: 0.
+- Precisión final de búsqueda: 9/100 = 9,0 %.
+- Configuración mejor encontrada:
 
 ```json
 {
@@ -106,23 +103,54 @@ Configuración inicial:
 }
 ```
 
-El baseline obtuvo **9/100 = 9,0 %**.
+La ronda terminó sin mejoras aceptadas. El resultado es la mejor configuración observada por esta heurística y este presupuesto; no demuestra optimalidad global.
 
-| Coordenada | Screening | Refinamiento sobre 100 | Decisión |
-|---|---|---|---|
-| rol | Los siete candidatos alternativos obtuvieron 0/10 | Índice 0: 7/100; índice 2: 8/100 | Se conserva rol=1 |
-| estrategia | Los siete candidatos alternativos obtuvieron 0/10 | Índice 0: 6/100; índice 1: 6/100 | Se conserva estrategia=5 |
-| formato | Índices 0, 2, 3, 4, 5 y 6: 0/10; índice 7: 1/10 | El refinamiento del finalista todavía no había terminado al interrumpirse la sesión | Pendiente de reanudación |
-| estilo | No iniciado | No iniciado | Pendiente |
-| cierre | No iniciado | No iniciado | Pendiente |
+## Validación final independiente
 
-Al momento de la interrupción, el historial persistido contenía 26 evaluaciones completas y dos coordenadas resumidas (`rol` y `estrategia`). El screening de `formato` estaba completo. La llamada de refinamiento del primer finalista se había interrumpido antes de completar las 90 instancias que faltaban después del screening; esa ejecución no aparece como evaluación completa en el historial, pero las respuestas guardadas por lotes permanecen en la caché del oráculo.
+Se ejecutó explícitamente `oraculo.validar` sobre la configuración mejor encontrada, con la partición de validación completa (87 instancias) y semilla 2026.
 
-La reanudación debe comenzar por `formato`, calcular los finalistas a partir del screening ya registrado y completar sus refinamientos. Después debe continuar con `estilo` y `cierre`. No se deben repetir las coordenadas ya resumidas. El módulo `src/reanudador.py` implementa esta recuperación y utiliza el historial y la caché persistidos en Google Drive.
+- Correctas: 8/87.
+- Fallidas: 79/87.
+- Precisión: 9,2 %.
 
-Archivos persistentes usados en Colab:
+Familias que aparecen con mayor frecuencia en las trazas de validación:
 
-- `/content/drive/MyDrive/ADA_G1/cache_oraculo_G1.json`
-- `/content/drive/MyDrive/ADA_G1/historial_coordinate_search_G1.json`
+| Primera familia de fallo reportada | Frecuencia |
+|---|---:|
+| `last_word:last_word_sent` | 6 |
+| `punctuation:punctuation_dot` | 6 |
+| `letters:letter_counting` | 5 |
+| `copy:repeat_phrase` | 5 |
+| `first_word:first_word_sent` | 4 |
+| `keywords:no_adjacent_consecutive` | 4 |
+| `keywords:word_once` | 4 |
+| `language:response_language` | 3 |
 
-Estos valores son un checkpoint intermedio, no la configuración final de entrega. No se ha evaluado todavía ninguna configuración final sobre las 87 instancias de validación y no se afirma optimalidad global.
+El oráculo registra la primera familia que falla en cada respuesta, no todas las restricciones incumplidas. La validación es una estimación sobre instancias visibles reservadas; no es la evaluación privada que realizará el docente.
+
+La cercanía entre 9,0 % de búsqueda y 9,2 % de validación no implica alto rendimiento absoluto. El porcentaje de aciertos sigue siendo bajo.
+
+## Archivos persistentes y reproducibilidad
+
+En Google Drive se conservaron:
+
+- `ADA_G1/cache_oraculo_G1.json`: 1.438 respuestas almacenadas en el archivo entregado para este registro.
+- `ADA_G1/historial_coordinate_search_G1.json`: 46 evaluaciones completas y cinco resúmenes de coordenadas.
+
+La caché incluye las 100 instancias de búsqueda y las 87 instancias de validación para la configuración ganadora, además de las generaciones de screening y refinamiento.
+
+La reanudación se implementó en `src/reanudador.py`. Las evaluaciones completas se omiten al restaurar el historial y las respuestas parciales que existan en la caché del oráculo pueden reutilizarse.
+
+## Limitaciones y trabajo pendiente
+
+1. Esta primera búsqueda terminó, pero no mejoró el baseline de 9,0 %.
+2. El método explora un cambio de ranura a la vez; puede quedar atrapado en un óptimo local y no detectar sinergias entre cambios simultáneos.
+3. Las trazas fueron almacenadas, pero esta versión no las usa todavía como criterio explícito para podar o proponer combinaciones.
+4. Una estrategia complementaria debe compararse con el mismo modelo, temperatura, partición de búsqueda y presupuesto claramente declarado.
+5. No se afirma optimalidad global.
+6. La formalización y la reducción desde 3-SAT solicitadas por la guía específica de ADAG1 deben demostrarse rigurosamente antes de considerarse concluidas.
+7. La evaluación privada del docente es distinta de `oraculo.validar` sobre las 87 instancias visibles.
+
+## Reproducibilidad
+
+Modelo Qwen/Qwen3-1.7B, temperatura 0.0, semilla 2026 para el screening, 10 instancias de screening, dos finalistas por coordenada, 100 instancias para el refinamiento, una ronda y aceptación solo ante mejora estricta.
