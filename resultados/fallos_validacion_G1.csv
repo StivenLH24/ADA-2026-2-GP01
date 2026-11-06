@@ -1,0 +1,16 @@
+familia_primera_falla,frecuencia
+last_word:last_word_sent,6
+punctuation:punctuation_dot,6
+letters:letter_counting,5
+copy:repeat_phrase,5
+first_word:first_word_sent,4
+keywords:no_adjacent_consecutive,4
+keywords:word_once,4
+language:response_language,3
+last_word:last_word_answer,3
+startend:end_checker,3
+paragraphs:paragraphs2,3
+new:copy_span_idx,3
+detectable_format:multiple_sections,3
+combination:repeat_prompt,2
+length_constraints:nth_paragraph_first_word,2
