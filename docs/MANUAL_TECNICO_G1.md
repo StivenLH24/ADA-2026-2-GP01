@@ -93,7 +93,7 @@ Descargar los recursos NLTK indicados en la sección 2 y añadir `/content/open-
 
 ```python
 from ayudas import cargar_datos, dividir, cargar_modelo
-from oraculo import Oraculo
+from oraculo import Oraculo, CATALOGO, RANURAS
 
 datos = cargar_datos()
 busqueda, validacion = dividir(datos)
