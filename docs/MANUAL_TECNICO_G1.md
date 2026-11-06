@@ -242,3 +242,59 @@ El conjunto de pruebas utiliza un oráculo simulado para comprobar validación d
 La implementación actual registra trazas, pero el criterio de selección de la primera búsqueda se basa principalmente en precisión. No implementa todavía una poda sistemática guiada por familias de fallos ni garantiza un óptimo global.
 
 La demostración de NP-dureza por reducción desde 3-SAT es un requisito académico independiente y debe agregarse solo después de demostrar la reducción y sus dos direcciones correctamente.
+
+
+## 9. Segunda estrategia experimental: búsqueda por pares guiada por trazas
+
+Se incorporó `src/busqueda_pares_guiada.py` para explorar combinaciones de dos cambios de ranura. Su finalidad es estudiar interacciones que Coordinate Search (un cambio a la vez) puede no detectar.
+
+### 9.1 Cómo prioriza los pares
+
+El módulo lee el baseline y los refinamientos individuales del historial de Coordinate Search. Para cada par de candidatos de ranuras distintas:
+
+1. Obtiene los IDs de instancias superadas y fallidas a partir de las trazas.
+2. Calcula la unión de instancias superadas por el baseline y por ambos candidatos individuales. Esta unión es una señal heurística de complementariedad, no una predicción garantizada del resultado combinado.
+3. Calcula la diversidad entre conjuntos de familias de primera falla.
+4. Ordena los pares por cobertura potencial y diversidad de fallos.
+5. Conserva los seis pares mejor priorizados.
+
+### 9.2 Screening y refinamiento
+
+Parámetros propuestos para la comparación:
+
+- Screening reproducible: 40 instancias.
+- Pares priorizados: 6.
+- Finalistas: 2.
+- Refinamiento: 100 instancias de búsqueda.
+- Semilla: 2026.
+- Temperatura: 0.0.
+
+El uso de 40 instancias intenta reducir los empates de 0 % que aparecieron con muestras de 10. La selección se basa primero en precisión del screening; la novedad del conjunto de IDs fallidos y la diversidad de familias se usan como desempate. Los finalistas se evalúan sobre todas las 100 instancias y solo se acepta una mejora estricta frente al baseline.
+
+### 9.3 Ejecución en Colab
+
+Con el entorno, el modelo y `oraculo` ya preparados, y con los archivos de búsqueda y caché persistidos en Drive:
+
+```python
+from src.busqueda_pares_guiada import ejecutar_busqueda_pares_guiada
+
+HISTORIAL_PARES = CARPETA_DATOS / "historial_busqueda_pares_G1.json"
+
+CONFIG_PARES, PRECISION_PARES, HISTORIAL_PARES_RESULTADO = (
+    ejecutar_busqueda_pares_guiada(
+        oraculo=oraculo,
+        datos_busqueda=busqueda,
+        historial_coordinate_path=HISTORIAL_BUSQUEDA,
+        historial_pares_path=HISTORIAL_PARES,
+        screen_n=40,
+        top_pares=6,
+        finalistas=2,
+        semilla=2026,
+    )
+)
+```
+
+Si Colab se interrumpe, volver a ejecutar la misma llamada después de reconstruir el oráculo con la misma caché y volver a montar Drive. El módulo conserva su propio historial y el oráculo reutiliza las generaciones ya guardadas.
+
+**Estado de esta estrategia en esta versión del manual:** implementada y preparada para ejecución, pero aún sin resultado medido con Qwen. No debe reportarse como mejora hasta completar screening y refinamiento.
+
