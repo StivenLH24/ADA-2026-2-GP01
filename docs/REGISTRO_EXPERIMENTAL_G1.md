@@ -154,3 +154,12 @@ La reanudación se implementó en `src/reanudador.py`. Las evaluaciones completa
 ## Reproducibilidad
 
 Modelo Qwen/Qwen3-1.7B, temperatura 0.0, semilla 2026 para el screening, 10 instancias de screening, dos finalistas por coordenada, 100 instancias para el refinamiento, una ronda y aceptación solo ante mejora estricta.
+
+
+## Estrategia complementaria preparada: búsqueda por pares guiada por trazas
+
+Después de completar Coordinate Search se implementó `src/busqueda_pares_guiada.py`. El objetivo es explorar posibles interacciones entre dos ranuras a partir de los aciertos complementarios y la diversidad de familias de primera falla observados en los refinamientos individuales.
+
+Parámetros propuestos: muestra de screening de 40 instancias, seis pares priorizados, dos finalistas, refinamiento sobre las 100 instancias de búsqueda y semilla 2026. La selección de pares usa la unión de IDs superados por los candidatos individuales como señal heurística de complementariedad; el resultado combinado se verifica realmente con el oráculo. La diversidad de familias de fallo se emplea como criterio secundario.
+
+**Estado:** código implementado y pruebas unitarias añadidas, pero experimento con Qwen todavía no ejecutado. Por tanto, no existe aún una comparación empírica entre Coordinate Search y la búsqueda por pares. La configuración de `entrega.json` continúa siendo la mejor observada en Coordinate Search hasta que un segundo experimento termine y, si mejora, pase validación.
