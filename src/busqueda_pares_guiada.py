@@ -278,8 +278,18 @@ def ejecutar_busqueda_pares_guiada(
             historial = json.load(f)
         if historial.get("configuracion_base") != config_base:
             raise ValueError("El historial de pares pertenece a otra configuración base.")
-        if historial.get("parametros", {}).get("semilla") != semilla:
-            raise ValueError("El historial de pares utiliza otra semilla.")
+        parametros_actuales = historial.get("parametros", {})
+        esperados = {
+            "screen_n": screen_n,
+            "top_pares": top_pares,
+            "finalistas": finalistas,
+            "semilla": semilla,
+        }
+        if parametros_actuales != esperados:
+            raise ValueError(
+                "El historial de pares existe con otros parámetros. "
+                "Use el mismo conjunto de parámetros o una ruta de historial nueva."
+            )
     else:
         pares = _crear_pares(config_base, baseline, candidatos, top_pares)
         historial = {
