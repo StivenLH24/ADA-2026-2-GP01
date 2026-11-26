@@ -298,3 +298,58 @@ Si Colab se interrumpe, volver a ejecutar la misma llamada después de reconstru
 
 **Estado de esta estrategia en esta versión del manual:** implementada y preparada para ejecución, pero aún sin resultado medido con Qwen. No debe reportarse como mejora hasta completar screening y refinamiento.
 
+
+
+## 10. Catálogo oficial G1 — versión 2
+
+La rama `catalogo-v2-g1` introduce una versión del catálogo alineada con las cinco categorías del proyecto:
+
+| Categoría | Clave | Posición en el prompt |
+|---|---|---|
+| Rol | `rol` | Antes de la petición |
+| Estrategia | `estrategia` | Antes de la petición |
+| Formato | `formato` | Antes de la petición |
+| Verificación | `verificacion` | Antes de la petición |
+| Recordatorio | `recordatorio` | Después de la petición |
+
+Cada categoría conserva ocho alternativas. Con temperatura fija en 0.0, el espacio continúa siendo de 32.768 configuraciones.
+
+Verificación y Recordatorio son categorías distintas: Verificación contiene instrucciones para revisar el cumplimiento antes de responder; Recordatorio reitera las restricciones después de la petición. La alternativa de Recordatorio que usa `{restricciones}` inserta las restricciones literales de la instancia.
+
+### 10.1 Aislamiento de caché e historial
+
+La versión 2 usa archivos independientes en Google Drive:
+
+- `ADA_G1/cache_oraculo_G1_v2.json`
+- `ADA_G1/historial_coordinate_search_G1_v2.json`
+- `ADA_G1/historial_busqueda_pares_G1_v2.json`
+
+No se deben renombrar ni sobrescribir los archivos de la versión anterior. La clave de caché incorpora el identificador `g1-v2`, por lo que las respuestas de la versión 1 no se reutilizan como evaluaciones de la versión 2. El reanudador rechaza checkpoints cuyo campo `version_catalogo` no coincida.
+
+### 10.2 Configuración inicial sugerida
+
+Para comenzar con las alternativas de referencia del catálogo nuevo:
+
+```python
+from oraculo import Oraculo, CATALOGO, RANURAS, LIMPIA, VERSION_CATALOGO
+
+CACHE_ORACULO = str(CARPETA_DATOS / "cache_oraculo_G1_v2.json")
+HISTORIAL_BUSQUEDA = CARPETA_DATOS / "historial_coordinate_search_G1_v2.json"
+
+oraculo = Oraculo(
+    modelo=modelo,
+    datos=busqueda,
+    validacion=validacion,
+    cache=CACHE_ORACULO,
+    max_new_tokens=384,
+    lote=1,
+)
+
+CONFIG_INICIAL_V2 = {**LIMPIA, "temperatura": 0.0}
+```
+
+Antes de ejecutar Coordinate Search, inspeccionar el prompt con `ver_prompt(CONFIG_INICIAL_V2, busqueda[0])` y ejecutar las pruebas unitarias. La primera evaluación con Qwen debe registrarse como baseline de versión 2.
+
+### 10.3 Alcance de los resultados anteriores
+
+Los porcentajes 9,0 % en búsqueda y 9,2 % en validación descritos en las secciones anteriores pertenecen al catálogo de versión 1 (`estilo` y `cierre`). No son resultados de la versión 2 y no deben compararse como si las configuraciones fueran equivalentes.
