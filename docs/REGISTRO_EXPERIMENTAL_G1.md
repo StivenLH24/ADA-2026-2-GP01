@@ -163,3 +163,12 @@ Después de completar Coordinate Search se implementó `src/busqueda_pares_guiad
 Parámetros propuestos: muestra de screening de 40 instancias, seis pares priorizados, dos finalistas, refinamiento sobre las 100 instancias de búsqueda y semilla 2026. La selección de pares usa la unión de IDs superados por los candidatos individuales como señal heurística de complementariedad; el resultado combinado se verifica realmente con el oráculo. La diversidad de familias de fallo se emplea como criterio secundario.
 
 **Estado:** código implementado y pruebas unitarias añadidas, pero experimento con Qwen todavía no ejecutado. Por tanto, no existe aún una comparación empírica entre Coordinate Search y la búsqueda por pares. La configuración de `entrega.json` continúa siendo la mejor observada en Coordinate Search hasta que un segundo experimento termine y, si mejora, pase validación.
+
+
+## Migración del catálogo a versión 2
+
+Se creó la rama `catalogo-v2-g1` para alinear el catálogo con las cinco categorías oficiales: `rol`, `estrategia`, `formato`, `verificacion` y `recordatorio`. Se mantienen ocho alternativas por categoría y temperatura fija 0.0.
+
+La migración separa Verificación (instrucción previa a la petición para revisar requisitos) de Recordatorio (instrucción posterior a la petición que puede reiterar las restricciones literales). La caché y el historial de versión 1 permanecen intactos.
+
+**Estado experimental de la versión 2:** implementación inicial del catálogo y pruebas añadidas. Aún no se ha ejecutado baseline con Qwen; por tanto, no hay precisión ni comparación experimental atribuible a esta versión. Las métricas históricas de este documento pertenecen exclusivamente a la versión 1.
