@@ -19,8 +19,8 @@ class TestBusquedaParesGuiada(unittest.TestCase):
             "rol": 0,
             "estrategia": 0,
             "formato": 0,
-            "estilo": 0,
-            "cierre": 0,
+            "verificacion": 0,
+            "recordatorio": 0,
             "temperatura": 0.0,
         }
         ids = [1, 2, 3, 4]
