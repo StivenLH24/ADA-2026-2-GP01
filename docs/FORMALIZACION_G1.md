@@ -11,7 +11,7 @@ El proyecto selecciona una combinación de instrucciones (prompt) que maximiza l
 La configuración del experimento se representa por:
 
 ```
-x = (x_rol, x_estrategia, x_formato, x_estilo, x_cierre, T)
+x = (x_rol, x_estrategia, x_formato, x_verificacion, x_recordatorio, T)
 ```
 
 Cada índice pertenece a `{0,1,2,3,4,5,6,7}`. En los experimentos registrados se fijó `T = 0.0`.
@@ -21,7 +21,7 @@ Cada índice pertenece a `{0,1,2,3,4,5,6,7}`. En los experimentos registrados se
 Para la formulación empírica registrada:
 
 - Un modelo de lenguaje fijo: Qwen/Qwen3-1.7B.
-- Un catálogo de cinco ranuras, con ocho instrucciones alternativas en cada ranura.
+- Un catálogo versión 2 de cinco ranuras (`rol`, `estrategia`, `formato`, `verificacion`, `recordatorio`), con ocho instrucciones alternativas en cada ranura.
 - Una temperatura fijada en 0.0.
 - Un conjunto de instancias de búsqueda `B` con 100 elementos.
 - Un conjunto de validación `V` disjunto de `B`, con 87 elementos.
@@ -100,10 +100,23 @@ La guía específica de ADAG1 solicita demostrar NP-dureza de la configuración 
 4. Demostrar ambos sentidos: `φ` satisfacible si y solo si `I(φ)` admite una configuración con el umbral requerido.
 5. Verificar que la transformación y el umbral se computan en tiempo polinomial y que la equivalencia no depende de asumir el resultado que se quiere probar.
 
-**Advertencia de alcance:** el catálogo empírico actual tiene exactamente cinco ranuras y ocho alternativas por ranura. Ese espacio fijo de 32.768 configuraciones puede enumerarse por completo y, por sí solo, no proporciona una familia de tamaño variable para una reducción desde 3-SAT. La demostración debe referirse a una generalización formal que esté justificada por el enunciado, no atribuir NP-dureza automáticamente al experimento finito.
+**Advertencia de alcance:** el catálogo empírico de la versión 2 tiene exactamente cinco ranuras y ocho alternativas por ranura. Ese espacio fijo de 32.768 configuraciones puede enumerarse por completo y, por sí solo, no proporciona una familia de tamaño variable para una reducción desde 3-SAT. La demostración debe referirse a una generalización formal que esté justificada por el enunciado, no atribuir NP-dureza automáticamente al experimento finito.
 
 ## 9. Referencias internas
 
 - README del monitor: definición del espacio, datasets y evaluación todo-o-nada.
 - Guía de Primera Entrega ADAG1, secciones 3, 4 y 7.
 - `docs/REGISTRO_EXPERIMENTAL_G1.md`: evidencia de la ejecución y validación.
+
+
+## 10. Versionado del catálogo
+
+La versión 2 alinea las cinco coordenadas con las categorías del proyecto: Rol, Estrategia, Formato, Verificación y Recordatorio. En la representación de decisión se usan los índices:
+
+```
+x = (x_rol, x_estrategia, x_formato, x_verificacion, x_recordatorio)
+```
+
+Cada índice pertenece a `{0,1,2,3,4,5,6,7}`; con temperatura fija en 0.0, el espacio empírico sigue teniendo (8^5=32.768) configuraciones. La versión 2 separa las instrucciones de verificación previas a la respuesta de la reiteración de restricciones posterior a la petición.
+
+Los resultados experimentales históricos de la sección 7 (9,0 % en búsqueda y 9,2 % en validación) fueron obtenidos con la versión 1, cuyas dos últimas categorías eran `estilo` y `cierre`. No se trasladan a la versión 2 ni constituyen su baseline. La versión 2 requiere una evaluación inicial nueva, con caché e historial independientes.
