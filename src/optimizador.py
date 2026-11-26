@@ -16,6 +16,9 @@ from pathlib import Path
 from typing import Any
 
 
+VERSION_CATALOGO = "g1-v2"
+
+
 class CoordinateSearch:
     """Búsqueda local por coordenadas con preselección y refinamiento.
 
@@ -86,7 +89,9 @@ class CoordinateSearch:
 
         self.historial_path.parent.mkdir(parents=True, exist_ok=True)
         contenido = {
-            "version": 1,
+            "version": 2,
+            "version_catalogo": VERSION_CATALOGO,
+            "ranuras": self.ranuras,
             "evaluaciones": self.historial,
             "resumen_coordenadas": self.resumen,
             "configuracion_actual": getattr(self, "configuracion_actual", None),
