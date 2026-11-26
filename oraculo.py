@@ -45,24 +45,13 @@ from open_instruct.IFEvalG import instructions_registry as _REG
 # del techo hiciera lo que hiciera el catálogo. Con ocho opciones esa
 # probabilidad cae al 6% y la búsqueda informada recupera su ventaja.
 #
-# Cada ranura ataca una **superficie** distinta de la respuesta, y las opciones
-# dañinas son directivas sobre la forma literal de la salida, no consejos de
-# tono: un 1.7B obedece «empezá con "Happy to help!"» y no obedece «sé cálido»,
-# porque la restricción explícita de la petición siempre le gana al estilo.
+# Cada ranura representa una dimensión distinta de las instrucciones:
+# rol define el papel; estrategia orienta el procedimiento; formato controla
+# la presentación; verificacion pide revisar requisitos antes de responder;
+# recordatorio reitera restricciones después de la petición.
 #
-#   rol        → PREFIJO     texto obligatorio antes de la respuesta
-#   estrategia → LARGO       inflar la respuesta
-#   formato    → ESTRUCTURA  párrafos, secciones, viñetas
-#   estilo     → CARACTERES  puntuación y mayúsculas
-#   cierre     → SUFIJO      texto obligatorio después de la respuesta
-#
-# Las superficies se solapan a medias con una vecina. El solape parcial es el
-# punto: disjuntas, el daño se compone pero cada opción sola es leve; iguales,
-# cada opción es letal pero el daño no se suma y no queda gradiente por donde
-# subir. A la mitad se tienen las dos cosas.
-#
-# `cierre` es la única ranura que va después de la petición: ahí se fundieron
-# verificación y recordatorio, y su opción limpia trae `{restricciones}`.
+# Las cuatro primeras categorías se anteponen a la petición. Recordatorio se
+# añade al final y puede insertar el texto literal de las restricciones.
 #
 # La opción limpia **no** está en el mismo índice en todas las ranuras
 # (ver `LIMPIA`): si lo estuviera, notar el patrón valdría el ejercicio
