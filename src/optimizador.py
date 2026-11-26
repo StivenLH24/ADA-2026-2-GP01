@@ -105,6 +105,8 @@ class CoordinateSearch:
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as archivo:
                 json.dump(contenido, archivo, ensure_ascii=False, indent=2)
+                archivo.flush()
+                os.fsync(archivo.fileno())
             Path(temporal).replace(self.historial_path)
         except Exception:
             Path(temporal).unlink(missing_ok=True)
