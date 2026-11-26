@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.optimizador import VERSION_CATALOGO
+
 
 def _ids(datos: list[dict[str, Any]]) -> list[Any]:
     return [fila.get("id") for fila in datos]
@@ -62,6 +64,12 @@ def _restaurar_checkpoint(optimizador):
 
     with ruta.open("r", encoding="utf-8") as archivo:
         estado = json.load(archivo)
+
+    if estado.get("version_catalogo") != VERSION_CATALOGO:
+        raise ValueError(
+            "El checkpoint pertenece a otro catálogo. No se puede reanudar "
+            "entre versiones; use un historial nuevo para g1-v2."
+        )
 
     evaluaciones = estado.get("evaluaciones")
     resumen = estado.get("resumen_coordenadas")
