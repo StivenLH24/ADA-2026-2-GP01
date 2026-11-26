@@ -145,51 +145,27 @@ CATALOGO = {
         "Number every paragraph of your reply \"1.\", \"2.\", and so on, each separated by "
         "a blank line.",
     ],
-    # CARACTERES · puntuación y mayúsculas
-    "estilo": [
-        # 0 · media
-        "Illustrate every point with an example, and put key terms in ALL CAPS.",
-        # 1 · pesada
-        "Write with energy: end every sentence with an exclamation mark, put key terms "
-        "in ALL CAPS, and separate your clauses with dashes.",
-        # 2 · media
-        "Capitalise Every Important Word For Emphasis.",
-        # 3 · media
-        "Use commas freely, and put an aside in parentheses in every sentence.",
-        # 4 · pesada
-        "Write the whole reply in lower case, with no full stops — use dashes between "
-        "thoughts instead.",
-        # 5 · media
-        "Join every pair of related sentences with a semicolon instead of a full stop, "
-        "and never end a line with a period.",
-        # 6 · limpia
-        "Respect exact word counts, casing and punctuation rules. Use no character the "
-        "request did not ask for.",
-        # 7 · media
-        "Add an emphatic adverb to every sentence, and end the key ones with an "
-        "exclamation mark.",
+    # VERIFICACIÓN · comprobación de restricciones antes de responder
+    "verificacion": [
+        "Before answering, check that the response addresses the main request.",
+        "Check factual claims before producing the final response.",
+        "Review only the first requirement and then provide the answer.",
+        "Prioritise completeness, even if some requested formatting rules are missed.",
+        "Before finalising, check the response against every explicit requirement and correct any violation.",
+        "Check spelling and grammar, but do not change the content.",
+        "Check that the answer is concise; other constraints are secondary.",
+        "Assume the draft satisfies the request and do not perform a final review.",
     ],
-    # SUFIJO · texto obligatorio DESPUÉS de la respuesta
-    "cierre": [
-        # 0 · pesada
-        "After your answer, add a final line that reads: \"Hope this helps — let me know "
-        "if you need anything else!\"",
-        # 1 · media
-        "After your answer, add a closing line summarising it in one sentence.",
-        # 2 · media
-        "After the answer, list every requirement you satisfied, one per line, prefixed "
-        "by \"- \".",
-        # 3 · limpia
+    # RECORDATORIO · reiteración de restricciones después de la petición
+    "recordatorio": [
+        "After the answer, add: \"Please check that the response follows the original request.\"",
+        "At the end, remind the reader to review the answer.",
+        "After the answer, repeat only the main topic of the request.",
+        "Finish with a short sentence saying that all requirements were considered.",
         "These are the requirements your response must satisfy:\n{restricciones}",
-        # 4 · pesada
-        "End every reply with a P.S. line adding one extra thought.",
-        # 5 · media
-        "Close every reply with a question inviting the reader to continue.",
-        # 6 · media
-        "End with a one-line takeaway prefixed by \"In short:\".",
-        # 7 · media
-        "After the answer, add a line starting with \"Next:\" suggesting what to ask "
-        "next.",
+        "After the answer, add a brief summary of the response.",
+        "End with: \"Let me know if you need another version.\"",
+        "Do not add any reminder or closing text after the answer.",
     ],
 }
 
@@ -197,12 +173,13 @@ CATALOGO = {
 # techo del ejercicio y `PESADA` el piso; la calibración mide contra los dos.
 # El oráculo no los usa para armar prompts: están acá para que la calibración y
 # las soluciones de ejemplo no tengan que codificar el índice a mano.
-LIMPIA = {"rol": 5, "estrategia": 2, "formato": 0, "estilo": 6, "cierre": 3}
-PESADA = {"rol": 0, "estrategia": 0, "formato": 1, "estilo": 1, "cierre": 0}
+LIMPIA = {"rol": 5, "estrategia": 2, "formato": 0, "verificacion": 4, "recordatorio": 4}
+PESADA = {"rol": 0, "estrategia": 0, "formato": 1, "verificacion": 7, "recordatorio": 0}
 
 TEMPERATURAS = [0.0, 0.3, 0.7]
 
-RANURAS = ["rol", "estrategia", "formato", "estilo", "cierre"]
+VERSION_CATALOGO = "g1-v2"
+RANURAS = ["rol", "estrategia", "formato", "verificacion", "recordatorio"]
 
 # Presupuesto de un lote, en lote × largo². El prefill materializa una matriz de
 # atención de lote × cabezas × largo² valores, así que el tope no puede ser solo
@@ -219,7 +196,7 @@ def espacio(temperaturas=(0.0,)):
 
     Por defecto temperatura fija en 0.0 → 8×8×8×8×8 = 32768 configs. Pasar
     `TEMPERATURAS` (0.0, 0.3, 0.7) triplica el espacio. Cada config es un dict
-    ``{rol, estrategia, formato, estilo, cierre, temperatura}``.
+    ``{rol, estrategia, formato, verificacion, recordatorio, temperatura}``.
     """
     tamanos = [range(len(CATALOGO[r])) for r in RANURAS]
     return [
@@ -231,8 +208,8 @@ def espacio(temperaturas=(0.0,)):
 def _opcion(config, ranura):
     """Texto de esa ranura. Una llave ausente no pega nada.
 
-    Una entrega anterior a `estilo` (o a `cierre`) sigue armando el prompt:
-    la ranura que no trae equivale al vacío, no al índice 0.
+    Las configuraciones de la versión anterior no son compatibles con este catálogo.
+    Una ranura ausente equivale al vacío, no al índice 0.
     """
     if ranura not in config:
         return ""
@@ -254,7 +231,7 @@ def _recordatorio(config, instancia):
     busca marcadores exactos y sangrarlos invitaría al modelo a emitirlos con
     espacios de más.
     """
-    plantilla = _opcion(config, "cierre")
+    plantilla = _opcion(config, "recordatorio")
     if not plantilla:
         return ""
     if "{restricciones}" not in plantilla:
@@ -275,7 +252,7 @@ def armar(config, instancia):
     la ranura ausente no se pega, para que una entrega vieja califique.
     """
     partes = []
-    for ranura in ("rol", "estrategia", "formato", "estilo"):
+    for ranura in ("rol", "estrategia", "formato", "verificacion"):
         texto = _opcion(config, ranura)
         if texto:
             partes.append(texto)
@@ -411,7 +388,7 @@ class Oraculo:
             instancias = self.datos
 
         k = _id_config(config)
-        claves = [f"{self.nombre_modelo}|{k}|{x['id']}|{semilla}" for x in instancias]
+        claves = [f"{VERSION_CATALOGO}|{self.nombre_modelo}|{k}|{x['id']}|{semilla}" for x in instancias]
         faltan = [(c, x) for c, x in zip(claves, instancias) if c not in self.cache]
 
         if faltan:
