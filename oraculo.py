@@ -244,13 +244,14 @@ def _recordatorio(config, instancia):
 
 
 def armar(config, instancia):
-    """Arma el prompt en orden: cuatro ranuras, la petición, el cierre.
+    """Arma el prompt con cuatro categorías previas, petición y recordatorio final.
 
-    `rol`, `estrategia`, `formato` y `estilo` van antes de la petición;
-    `cierre` va después. Se unen con una línea en blanco y se saltan las
-    cadenas vacías. Una config sin `estilo` o sin `cierre` sigue armando:
-    la ranura ausente no se pega, para que una entrega vieja califique.
+    Las configuraciones antiguas no se reinterpretan: deben usar las cinco
+    claves del catálogo g1-v2.
     """
+    esperadas = set(RANURAS) | {"temperatura"}
+    if set(config) != esperadas:
+        raise ValueError(f"Configuración incompatible con {VERSION_CATALOGO}.")
     partes = []
     for ranura in ("rol", "estrategia", "formato", "verificacion"):
         texto = _opcion(config, ranura)
