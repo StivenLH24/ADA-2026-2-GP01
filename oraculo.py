@@ -213,7 +213,7 @@ def _recordatorio(config, instancia):
     paráfrasis. Si la instancia no la trae, no se pega la plantilla que
     depende de `{restricciones}` — hay conjuntos (los ocultos) donde el
     campo viene vacío. Una plantilla sin ese hueco se pega igual: es una
-    instrucción de cierre, no un recordatorio de la instancia.
+    instrucción de recordatorio, no un resumen de la respuesta.
 
     Una restricción puede ocupar varias líneas (las que traen un ejemplo de
     formato). Se copian tal cual, sin sangrar la continuación: el verificador
@@ -247,9 +247,9 @@ def armar(config, instancia):
         if texto:
             partes.append(texto)
     partes.append(instancia["prompt"])
-    cierre = _recordatorio(config, instancia)
-    if cierre:
-        partes.append(cierre)
+    recordatorio = _recordatorio(config, instancia)
+    if recordatorio:
+        partes.append(recordatorio)
     return "\n\n".join(partes)
 
 
