@@ -177,7 +177,7 @@ RANURAS = ["rol", "estrategia", "formato", "verificacion", "recordatorio"]
 PRESUPUESTO_ATENCION = 8_000_000
 
 # Segundos mínimos entre volcados del caché a disco durante una tanda.
-PERIODO_GUARDADO = 60
+PERIODO_GUARDADO = 10
 
 
 def espacio(temperaturas=(0.0,)):
@@ -550,5 +550,29 @@ class Oraculo:
         ahora = time.monotonic()
         if not forzar and ahora - self._ultimo_guardado < PERIODO_GUARDADO:
             return
-        json.dump(self.cache, open(self.ruta_cache, "w"))
+        # Escritura atómica: si Colab se desconecta durante el volcado, el
+        # archivo anterior permanece intacto. El temporal vive en el mismo
+        # directorio para que os.replace no cruce sistemas de archivos.
+        import tempfile
+
+        ruta = os.path.abspath(self.ruta_cache)
+        directorio = os.path.dirname(ruta) or "."
+        os.makedirs(directorio, exist_ok=True)
+        fd, temporal = tempfile.mkstemp(
+            prefix=os.path.basename(ruta) + ".",
+            suffix=".tmp",
+            dir=directorio,
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as archivo:
+                json.dump(self.cache, archivo, ensure_ascii=False)
+                archivo.flush()
+                os.fsync(archivo.fileno())
+            os.replace(temporal, ruta)
+        except Exception:
+            try:
+                os.unlink(temporal)
+            except FileNotFoundError:
+                pass
+            raise
         self._ultimo_guardado = ahora
