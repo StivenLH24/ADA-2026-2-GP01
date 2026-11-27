@@ -78,3 +78,17 @@ python scripts/analizar_coocurrencia_multirrestriccion.py \
 ```
 
 El soporte representa el porcentaje de respuestas fallidas en las que aparece el par. Jaccard se calcula como intersección dividida por unión de los conjuntos de instancias donde aparece cada restricción. Es una medida descriptiva y no implica causalidad. Los valores quedan pendientes de ejecutar sobre el CSV real; no se anticipan cifras.
+
+
+## Resultados de coocurrencia obtenidos
+
+Se ejecutó el script sobre la matriz multirrestricción de las 68 respuestas fallidas. Se analizaron 68 instancias, 38 restricciones distintas y 50 pares distintos con al menos una coocurrencia.
+
+Los tres pares más frecuentes aparecieron en dos instancias cada uno:
+- `last_word:last_word_sent` + `punctuation:punctuation_dot` (Jaccard: 13,33 %).
+- `new:copy_span_idx` + `punctuation:no_comma` (Jaccard: 40,00 %).
+- `keywords:no_adjacent_consecutive` + `length_constraints:nth_paragraph_first_word` (Jaccard: 22,22 %).
+
+El resto de los pares incluidos en el top 10 presentó una coocurrencia. Aunque `new:copy_span_idx` + `punctuation:no_comma` obtuvo el mayor Jaccard del top 10, su frecuencia absoluta fue de solo dos instancias. Por ello, los resultados son descriptivos y no permiten afirmar causalidad ni una asociación estable.
+
+Los tres archivos generados (`pares_coocurrencia_G1_v2.csv`, `matriz_coocurrencia_G1_v2.csv` y `reporte_coocurrencia_G1_v2.md`) se conservaron en Drive bajo `reporte_coocurrencia_G1_v2`. No se versionan los CSV ni las respuestas del modelo.
