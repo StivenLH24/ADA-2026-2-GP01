@@ -47,7 +47,7 @@ La búsqueda registró 46 evaluaciones. La configuración es la mejor observada 
 - `src/reanudador.py`: recuperación de una búsqueda interrumpida desde el checkpoint.
 - `src/busqueda_pares_guiada.py`: estrategia experimental complementaria; no atribuirle resultados hasta ejecutar su experimento.
 - `scripts/analizar_fallos_multirestriccion.py`: diagnóstico offline que evalúa todas las restricciones de cada respuesta fallida usando la caché, sin cargar Qwen. La ejecución v2 examinó 68 respuestas fallidas, detectó 110 incumplimientos individuales y encontró 31 respuestas con fallos múltiples.
-- `scripts/analizar_coocurrencia_multirrestriccion.py`: calcula pares de restricciones que coocurren, soporte e índice Jaccard a partir de la matriz CSV del diagnóstico.
+- `scripts/analizar_coocurrencia_multirrestriccion.py`: calcula pares de restricciones que coocurren, soporte e índice Jaccard a partir de la matriz CSV del diagnóstico. La ejecución sobre validación observó 50 pares distintos entre 38 restricciones en 68 respuestas fallidas; la máxima frecuencia de un par fue dos.
 - `docs/REGISTRO_EXPERIMENTAL_G1.md`: registro histórico v1 y resultados actuales v2.
 - `docs/DIAGNOSTICO_MULTIRRESTRICCION_G1_V2.md`: procedimiento del análisis de fallos simultáneos.
 - `tests/`: pruebas unitarias del código propio.
