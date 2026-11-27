@@ -8,7 +8,7 @@ El script `scripts/analizar_fallos_multirestriccion.py` vuelve a pasar cada resp
 
 ## Entradas
 
-- Dataset visible de catálogo v2 (`datos_visibles_G1_v2.json`).
+- Dataset visible de catálogo v2. En la ejecución registrada se utilizó `datos_visibles.json` en la raíz del repositorio; se comprobó que contiene 450 IDs únicos (100 búsqueda, 87 validación y 263 descartadas).
 - Caché de respuestas de Oráculo v2 (`cache_oraculo_G1_v2.json`).
 - Historial de Coordinate Search v2 (`historial_coordinate_search_G1_v2.json`).
 - Clon de `allenai/open-instruct`, que contiene el registro IFEvalG.
@@ -20,15 +20,15 @@ El script reconstruye la configuración final y la semilla desde el historial. C
 En Colab, después de instalar las dependencias y clonar `allenai/open-instruct` como en el notebook:
 
 ```bash
-python scripts/analizar_fallos_multirestriccion.py \
-  --dataset /content/drive/MyDrive/ada_v2/datos_visibles_G1_v2.json \
-  --cache /content/drive/MyDrive/ada_v2/cache_oraculo_G1_v2.json \
-  --historial /content/drive/MyDrive/ada_v2/historial_coordinate_search_G1_v2.json \
+python scripts/analizar_fallos_multirrestriccion.py \
+  --dataset /content/ADA-2026-2-GP01/datos_visibles.json \
+  --cache /content/drive/MyDrive/ADA_G1/cache_oraculo_G1_v2.json \
+  --historial /content/drive/MyDrive/ADA_G1/historial_coordinate_search_G1_v2.json \
   --open-instruct /content/open-instruct \
-  --salida /content/drive/MyDrive/ada_v2/reporte_multirestriccion_G1_v2
+  --salida /content/drive/MyDrive/ADA_G1/reporte_multirestriccion_G1_v2
 ```
 
-Ajustar las rutas a la ubicación real de los archivos. No es necesario cargar Qwen ni volver a generar respuestas.
+Ajustar las rutas a la ubicación real de los archivos. En Colab, si faltan dependencias, instalar `langdetect` con `pip install langdetect` y descargar los recursos NLTK con `nltk.download('punkt_tab')` y `nltk.download('punkt')`. No es necesario cargar Qwen ni volver a generar respuestas.
 
 ## Salidas
 
