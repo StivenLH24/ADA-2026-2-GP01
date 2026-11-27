@@ -213,11 +213,22 @@ La validación se utilizó únicamente para evaluar la configuración final. No 
 
 El oráculo conserva solo la primera restricción incumplida por respuesta. Por tanto, las frecuencias originales de `violo` son primeras causas detectadas, no un inventario de todas las restricciones que incumple cada salida.
 
-### Análisis de fallos y siguiente diagnóstico
+### Análisis de fallos y diagnóstico multirrestricción
 
 Se reconstruyeron las 87 respuestas de validación desde la caché y se cruzaron con el dataset visible. La configuración final, el modelo y la semilla coinciden con el historial. Las 68 respuestas fallidas tienen su primera restricción registrada dentro de los IDs de restricciones de su instancia.
 
-Se añadió `scripts/analizar_fallos_multirestriccion.py` para volver a ejecutar cada verificador individualmente sobre las salidas cacheadas. Este análisis permite contar incumplimientos simultáneos sin cargar el modelo ni generar texto. **El script está versionado, pero el diagnóstico completo con las clases IFEvalG reales aún está pendiente de ejecución y verificación.** No se atribuyen resultados de fallos múltiples antes de esa ejecución.
+Se ejecutó `scripts/analizar_fallos_multirrestriccion.py` con las clases IFEvalG reales sobre las 68 respuestas fallidas, sin cargar Qwen ni generar texto. El análisis terminó correctamente y detectó:
+
+- Instancias con más de una restricción incumplida: 31/68 (45,59 %).
+- Incumplimientos individuales detectados: 110.
+- Familias con más incumplimientos: `keywords` (24; 21,82 %), `punctuation` (14; 12,73 %), `detectable_format` (13; 11,82 %) y `copy` (11; 10,00 %). Estas cuatro familias reúnen 62/110 (56,36 %) de los incumplimientos.
+- Restricciones individuales más frecuentes: `punctuation:punctuation_dot` (10), `last_word:last_word_sent` (7), `length_constraints:nth_paragraph_first_word` (6) y `copy:repeat_phrase` (6).
+
+Los conteos representan incumplimientos individuales; una respuesta puede contribuir a varios. Las excepciones de los verificadores detienen el análisis y no se clasifican como incumplimientos. El diagnóstico caracteriza la configuración final y no modifica la configuración ni usa la validación para optimizar.
+
+Los archivos generados en la carpeta local de Drive `reporte_multirestriccion_G1_v2` son: `matriz_fallos_multirestriccion_G1_v2.csv`, `conteo_restricciones_G1_v2.csv`, `conteo_familias_G1_v2.csv` y `reporte_multirestriccion_G1_v2.md`. No se versionan los CSV con respuestas del modelo ni otros artefactos derivados de la ejecución.
+
+Como siguiente análisis se incorpora `scripts/analizar_coocurrencia_multirrestriccion.py`, que calcula pares de restricciones que aparecen incumplidos en una misma respuesta, soporte por instancia, índice Jaccard y matriz simétrica. Los resultados numéricos de coocurrencia quedan pendientes de ejecutar sobre el CSV real.
 
 ### Comparabilidad y limitaciones
 
@@ -225,3 +236,7 @@ El baseline v1 fue 9/100 y su validación 8/87. Esos números corresponden al ca
 
 La validación de 87 instancias es una medición descriptiva reservada, no la evaluación privada del docente. No se debe reutilizar para seleccionar configuraciones. La búsqueda por coordenadas sigue siendo heurística y no garantiza optimalidad global.
 
+
+### Coocurrencia de restricciones — análisis complementario preparado
+
+La coocurrencia permitirá identificar pares de restricciones que aparecen incumplidos en una misma respuesta. El script calcula conteos conjuntos, soporte sobre el total de instancias fallidas e índice Jaccard. Es un análisis descriptivo: no establece causalidad ni autoriza a ajustar la configuración con el conjunto de validación. Los resultados quedan pendientes de ejecución sobre `matriz_fallos_multirestriccion_G1_v2.csv`.
