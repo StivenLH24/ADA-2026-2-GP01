@@ -237,6 +237,25 @@ El baseline v1 fue 9/100 y su validación 8/87. Esos números corresponden al ca
 La validación de 87 instancias es una medición descriptiva reservada, no la evaluación privada del docente. No se debe reutilizar para seleccionar configuraciones. La búsqueda por coordenadas sigue siendo heurística y no garantiza optimalidad global.
 
 
-### Coocurrencia de restricciones — análisis complementario preparado
+### Coocurrencia de restricciones — resultados v2
 
-La coocurrencia permitirá identificar pares de restricciones que aparecen incumplidos en una misma respuesta. El script calcula conteos conjuntos, soporte sobre el total de instancias fallidas e índice Jaccard. Es un análisis descriptivo: no establece causalidad ni autoriza a ajustar la configuración con el conjunto de validación. Los resultados quedan pendientes de ejecución sobre `matriz_fallos_multirestriccion_G1_v2.csv`.
+Se ejecutó `scripts/analizar_coocurrencia_multirrestriccion.py` sobre la matriz de 68 respuestas fallidas generada por el diagnóstico multirrestricción. Se analizaron 68 instancias, con 38 restricciones distintas observadas y 50 pares distintos de restricciones que coocurrieron al menos una vez.
+
+Los pares con dos apariciones fueron:
+
+| Restricción A | Restricción B | Coocurrencias | Jaccard |
+|---|---|---:|---:|
+| `last_word:last_word_sent` | `punctuation:punctuation_dot` | 2 | 13,33 % |
+| `new:copy_span_idx` | `punctuation:no_comma` | 2 | 40,00 % |
+| `keywords:no_adjacent_consecutive` | `length_constraints:nth_paragraph_first_word` | 2 | 22,22 % |
+
+Los siete pares restantes del top 10 aparecieron una vez cada uno. Entre ellos se observó la coocurrencia de `punctuation:no_comma` con `punctuation:punctuation_dot`, y de `keywords:no_adjacent_consecutive` con `letters:letter_counting2`.
+
+El mayor índice Jaccard del top 10 fue 40,00 % para `new:copy_span_idx` junto con `punctuation:no_comma`. Ese porcentaje debe interpretarse junto con su frecuencia absoluta: el par aparece en solo dos instancias. Los pares son señales descriptivas y no evidencia de causalidad ni de una interacción sistemática entre instrucciones. En una muestra de 68 respuestas fallidas, las frecuencias observadas son reducidas y no permiten generalizar sin una evaluación adicional.
+
+Los resultados se guardaron en Drive en `reporte_coocurrencia_G1_v2`:
+- `pares_coocurrencia_G1_v2.csv`.
+- `matriz_coocurrencia_G1_v2.csv`.
+- `reporte_coocurrencia_G1_v2.md`.
+
+La coocurrencia completa este diagnóstico descriptivo de validación. No se modificó la configuración final ni se utilizó el conjunto de validación para optimizarla.
