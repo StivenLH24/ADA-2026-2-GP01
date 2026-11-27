@@ -77,7 +77,7 @@ python scripts/analizar_coocurrencia_multirrestriccion.py \
   --salida /content/drive/MyDrive/ADA_G1/reporte_coocurrencia_G1_v2
 ```
 
-El soporte representa el porcentaje de respuestas fallidas en las que aparece el par. Jaccard se calcula como intersección dividida por unión de los conjuntos de instancias donde aparece cada restricción. Es una medida descriptiva y no implica causalidad. Los valores quedan pendientes de ejecutar sobre el CSV real; no se anticipan cifras.
+El soporte representa el porcentaje de respuestas fallidas en las que aparece el par. Jaccard se calcula como intersección dividida por unión de los conjuntos de instancias donde aparece cada restricción. Es una medida descriptiva y no implica causalidad. Los valores obtenidos se presentan en la sección de resultados de coocurrencia.
 
 
 ## Resultados de coocurrencia obtenidos
