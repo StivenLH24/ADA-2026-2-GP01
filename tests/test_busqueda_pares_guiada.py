@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from src.busqueda_pares_guiada import (
-    _aciertos, _cargar_historial_coordenadas, _crear_pares, _jaccard,
+    _aciertos, _cargar_historial_coordenadas, _crear_pares, _familias, _jaccard,
 )
 
 
@@ -18,6 +18,16 @@ class TestBusquedaParesGuiada(unittest.TestCase):
 
     def test_jaccard_conjuntos_disjuntos(self):
         self.assertEqual(_jaccard({"a"}, {"b"}), 0.0)
+
+    def test_familias_normaliza_identificadores_de_restriccion(self):
+        registro = {
+            "trazas": [
+                {"violo": "keywords:no_adjacent_consecutive"},
+                {"violo": "keywords:word_once"},
+                {"violo": "punctuation:punctuation_dot"},
+            ]
+        }
+        self.assertEqual(_familias(registro), {"keywords", "punctuation"})
 
 
     def test_usa_configuracion_final_si_mejoro_el_baseline(self):
