@@ -7,6 +7,8 @@
 
 Este documento distingue la exploración inicial de la ejecución formal de búsqueda por coordenadas y su validación. Ningún resultado se presenta como óptimo global demostrado.
 
+> **Estado actualizado al 27-11-2026:** las secciones anteriores de búsqueda y validación describen el experimento del catálogo v1 y se conservan como registro histórico. Los resultados vigentes del catálogo v2 están documentados al final de este archivo. No comparar directamente las métricas v1 y v2: cambiaron las cinco ranuras del catálogo.
+
 ## Entorno comprobado
 
 - Entorno: Google Colab.
@@ -165,10 +167,61 @@ Parámetros propuestos: muestra de screening de 40 instancias, seis pares priori
 **Estado:** código implementado y pruebas unitarias añadidas, pero experimento con Qwen todavía no ejecutado. Por tanto, no existe aún una comparación empírica entre Coordinate Search y la búsqueda por pares. La configuración de `entrega.json` continúa siendo la mejor observada en Coordinate Search hasta que un segundo experimento termine y, si mejora, pase validación.
 
 
-## Migración del catálogo a versión 2
+## Catálogo versión 2 — ejecución completada
 
-Se creó la rama `catalogo-v2-g1` para alinear el catálogo con las cinco categorías oficiales: `rol`, `estrategia`, `formato`, `verificacion` y `recordatorio`. Se mantienen ocho alternativas por categoría y temperatura fija 0.0.
+Se ejecutó la búsqueda con el catálogo oficial de cinco ranuras: `rol`, `estrategia`, `formato`, `verificacion` y `recordatorio`. Cada ranura tiene ocho alternativas; temperatura fija 0.0. La rama de trabajo es `catalogo-v2-g1`.
 
-La migración separa Verificación (instrucción previa a la petición para revisar requisitos) de Recordatorio (instrucción posterior a la petición que puede reiterar las restricciones literales). La caché y el historial de versión 1 permanecen intactos.
+### Entorno y partición
 
-**Estado experimental de la versión 2:** implementación inicial del catálogo y pruebas añadidas. Aún no se ha ejecutado baseline con Qwen; por tanto, no hay precisión ni comparación experimental atribuible a esta versión. Las métricas históricas de este documento pertenecen exclusivamente a la versión 1.
+- Entorno: Google Colab Free.
+- GPU: NVIDIA Tesla T4.
+- Modelo: Qwen/Qwen3-1.7B.
+- Temperatura: 0.0.
+- Semilla: 2026.
+- Dataset visible: 450 instancias (100 búsqueda, 87 validación, 263 descartadas).
+- Caché e historial: archivos independientes con sufijo `G1_v2`; no se mezclan con los artefactos v1.
+
+### Búsqueda
+
+- Baseline v2: 12/100 = 12,00 %.
+- Evaluaciones registradas: 46.
+- Mejor precisión observada en búsqueda: 21/100 = 21,00 %.
+- La recuperación desde checkpoint y caché persistente permitió continuar la ejecución sin repetir las generaciones ya almacenadas.
+
+Configuración final observada:
+
+```json
+{
+  "rol": 1,
+  "estrategia": 2,
+  "formato": 0,
+  "verificacion": 4,
+  "recordatorio": 4,
+  "temperatura": 0.0
+}
+```
+
+Esta configuración es la mejor observada por Coordinate Search con el presupuesto ejecutado; no se afirma que sea un óptimo global.
+
+### Validación independiente
+
+- Correctas: 19/87.
+- Fallidas: 68/87.
+- Precisión: 21,84 %.
+
+La validación se utilizó únicamente para evaluar la configuración final. No se utilizó para elegir índices ni para continuar la búsqueda.
+
+El oráculo conserva solo la primera restricción incumplida por respuesta. Por tanto, las frecuencias originales de `violo` son primeras causas detectadas, no un inventario de todas las restricciones que incumple cada salida.
+
+### Análisis de fallos y siguiente diagnóstico
+
+Se reconstruyeron las 87 respuestas de validación desde la caché y se cruzaron con el dataset visible. La configuración final, el modelo y la semilla coinciden con el historial. Las 68 respuestas fallidas tienen su primera restricción registrada dentro de los IDs de restricciones de su instancia.
+
+Se añadió `scripts/analizar_fallos_multirestriccion.py` para volver a ejecutar cada verificador individualmente sobre las salidas cacheadas. Este análisis permite contar incumplimientos simultáneos sin cargar el modelo ni generar texto. **El script está versionado, pero el diagnóstico completo con las clases IFEvalG reales aún está pendiente de ejecución y verificación.** No se atribuyen resultados de fallos múltiples antes de esa ejecución.
+
+### Comparabilidad y limitaciones
+
+El baseline v1 fue 9/100 y su validación 8/87. Esos números corresponden al catálogo previo (`estilo` y `cierre` en lugar de `verificacion` y `recordatorio`) y no son una línea base comparable de v2. La línea base interna de v2 es 12/100.
+
+La validación de 87 instancias es una medición descriptiva reservada, no la evaluación privada del docente. No se debe reutilizar para seleccionar configuraciones. La búsqueda por coordenadas sigue siendo heurística y no garantiza optimalidad global.
+
