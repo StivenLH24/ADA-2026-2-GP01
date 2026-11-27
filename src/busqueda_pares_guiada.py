@@ -35,8 +35,9 @@ def _aciertos(registro):
 
 
 def _familias(registro):
+    """Extrae la familia general de cada primera falla (antes de ':')."""
     return {
-        t.get("violo")
+        str(t.get("violo")).split(":", 1)[0]
         for t in registro.get("trazas", [])
         if t.get("violo")
     }
