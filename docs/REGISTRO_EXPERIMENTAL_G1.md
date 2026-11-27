@@ -162,7 +162,7 @@ Modelo Qwen/Qwen3-1.7B, temperatura 0.0, semilla 2026 para el screening, 10 inst
 
 Después de completar Coordinate Search se implementó `src/busqueda_pares_guiada.py`. El objetivo es explorar posibles interacciones entre dos ranuras a partir de los aciertos complementarios y la diversidad de familias de primera falla observados en los refinamientos individuales.
 
-Parámetros propuestos: muestra de screening de 40 instancias, seis pares priorizados, dos finalistas, refinamiento sobre las 100 instancias de búsqueda y semilla 2026. La selección de pares usa la unión de IDs superados por los candidatos individuales como señal heurística de complementariedad; el resultado combinado se verifica realmente con el oráculo. La diversidad de familias de fallo se emplea como criterio secundario.
+Parámetros propuestos: muestra de screening de 40 instancias, seis pares priorizados, dos finalistas, refinamiento sobre las 100 instancias de búsqueda y semilla 2026. La selección de pares usa la unión de IDs superados por los candidatos individuales como señal heurística de complementariedad; el resultado combinado se verifica realmente con el oráculo. La diversidad de familias de fallo se emplea como criterio secundario. La implementación usa como referencia la evaluación completa de la configuración final registrada en `configuracion_actual` (21/100 en v2), que puede diferir del baseline inicial (12/100). Los candidatos son refinamientos completos de una sola ranura alrededor de esa configuración final. La diversidad se calcula por familia general de primera falla (`keywords`, `punctuation`, etc.), no por identificador individual de restricción.
 
 **Estado:** código implementado y pruebas unitarias añadidas, pero experimento con Qwen todavía no ejecutado. Por tanto, no existe aún una comparación empírica entre Coordinate Search y la búsqueda por pares. La configuración de `entrega.json` continúa siendo la mejor observada en Coordinate Search hasta que un segundo experimento termine y, si mejora, pase validación.
 
@@ -228,7 +228,7 @@ Los conteos representan incumplimientos individuales; una respuesta puede contri
 
 Los archivos generados en la carpeta local de Drive `reporte_multirestriccion_G1_v2` son: `matriz_fallos_multirestriccion_G1_v2.csv`, `conteo_restricciones_G1_v2.csv`, `conteo_familias_G1_v2.csv` y `reporte_multirestriccion_G1_v2.md`. No se versionan los CSV con respuestas del modelo ni otros artefactos derivados de la ejecución.
 
-Como siguiente análisis se incorpora `scripts/analizar_coocurrencia_multirrestriccion.py`, que calcula pares de restricciones que aparecen incumplidos en una misma respuesta, soporte por instancia, índice Jaccard y matriz simétrica. Los resultados numéricos de coocurrencia quedan pendientes de ejecutar sobre el CSV real.
+Se incorporó `scripts/analizar_coocurrencia_multirrestriccion.py`, que calcula pares de restricciones que aparecen incumplidos en una misma respuesta, soporte por instancia, índice Jaccard y matriz simétrica. Los resultados obtenidos se documentan en la sección «Coocurrencia de restricciones — resultados v2».
 
 ### Comparabilidad y limitaciones
 
