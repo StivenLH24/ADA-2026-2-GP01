@@ -1,6 +1,11 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from src.busqueda_pares_guiada import _aciertos, _crear_pares, _jaccard
+from src.busqueda_pares_guiada import (
+    _aciertos, _cargar_historial_coordenadas, _crear_pares, _jaccard,
+)
 
 
 class TestBusquedaParesGuiada(unittest.TestCase):
@@ -13,6 +18,83 @@ class TestBusquedaParesGuiada(unittest.TestCase):
 
     def test_jaccard_conjuntos_disjuntos(self):
         self.assertEqual(_jaccard({"a"}, {"b"}), 0.0)
+
+
+    def test_usa_configuracion_final_si_mejoro_el_baseline(self):
+        config_inicial = {
+            "rol": 0, "estrategia": 0, "formato": 0,
+            "verificacion": 0, "recordatorio": 0, "temperatura": 0.0,
+        }
+        config_final = {**config_inicial, "rol": 1}
+        ids = [10, 20, 30, 40]
+        historial = {
+            "configuracion_actual": config_final,
+            "precision_actual": 0.5,
+            "evaluaciones": [
+                {
+                    "etapa": "baseline",
+                    "configuracion": config_inicial,
+                    "precision": 0.25,
+                    "instancias": 4,
+                    "ids_instancias": ids,
+                    "semilla": 2026,
+                    "trazas": [
+                        {"id": 20, "violo": "familia_a"},
+                        {"id": 30, "violo": "familia_b"},
+                        {"id": 40, "violo": "familia_b"},
+                    ],
+                },
+                {
+                    "etapa": "refinamiento",
+                    "ranura": "rol",
+                    "configuracion": config_final,
+                    "precision": 0.5,
+                    "instancias": 4,
+                    "ids_instancias": ids,
+                    "semilla": 2026,
+                    "trazas": [
+                        {"id": 30, "violo": "familia_c"},
+                        {"id": 40, "violo": "familia_c"},
+                    ],
+                },
+                {
+                    "etapa": "refinamiento",
+                    "ranura": "rol",
+                    "configuracion": {**config_final, "rol": 2},
+                    "precision": 0.5,
+                    "instancias": 4,
+                    "ids_instancias": ids,
+                    "semilla": 2026,
+                    "trazas": [
+                        {"id": 20, "violo": "familia_d"},
+                        {"id": 40, "violo": "familia_d"},
+                    ],
+                },
+                {
+                    "etapa": "refinamiento",
+                    "ranura": "estrategia",
+                    "configuracion": {**config_final, "estrategia": 1},
+                    "precision": 0.5,
+                    "instancias": 4,
+                    "ids_instancias": ids,
+                    "semilla": 2026,
+                    "trazas": [
+                        {"id": 20, "violo": "familia_e"},
+                        {"id": 30, "violo": "familia_e"},
+                    ],
+                },
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "historial.json"
+            path.write_text(json.dumps(historial), encoding="utf-8")
+            config, referencia, candidatos = _cargar_historial_coordenadas(path)
+
+        self.assertEqual(config, config_final)
+        self.assertEqual(referencia["precision"], 0.5)
+        self.assertEqual(_aciertos(referencia), {"10", "20"})
+        self.assertEqual({c["ranura"] for c in candidatos}, {"rol", "estrategia"})
+        self.assertEqual(len(candidatos), 2)
 
     def test_prioriza_pares_con_aciertos_complementarios(self):
         config_base = {
