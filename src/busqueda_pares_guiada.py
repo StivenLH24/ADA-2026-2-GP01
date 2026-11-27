@@ -62,6 +62,13 @@ def _guardar_json(path: Path, value: dict[str, Any]) -> None:
 
 
 def _cargar_historial_coordenadas(path):
+    """Carga la configuración final y sus refinamientos individuales comparables.
+
+    El baseline inicial puede diferir de la configuración final si Coordinate
+    Search aceptó mejoras. Para construir pares, la referencia correcta es la
+    evaluación completa (100 instancias) de la configuración final guardada en
+    `configuracion_actual`, no necesariamente la primera evaluación baseline.
+    """
     with Path(path).open("r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -71,28 +78,54 @@ def _cargar_historial_coordenadas(path):
 
     baselines = [e for e in evaluaciones if e.get("etapa") == "baseline"]
     if not baselines:
-        raise ValueError("El historial no contiene un baseline.")
+        raise ValueError("El historial no contiene un baseline inicial.")
 
-    baseline = baselines[0]
+    baseline_inicial = baselines[0]
     config_base = copy.deepcopy(data.get("configuracion_actual"))
     if not isinstance(config_base, dict):
-        config_base = copy.deepcopy(baseline["configuracion"])
+        config_base = copy.deepcopy(baseline_inicial["configuracion"])
 
-    if config_base != baseline["configuracion"]:
-        raise ValueError(
-            "Esta implementación de búsqueda por pares requiere que la "
-            "configuración final de CoordinateSearch coincida con el baseline. "
-            "En la primera ejecución G1 sí coinciden porque no hubo cambios aceptados."
-        )
-
-    n = int(baseline["instancias"])
-    ids_base = _normalizar_ids(baseline.get("ids_instancias", []))
+    n = int(baseline_inicial["instancias"])
+    ids_base = _normalizar_ids(baseline_inicial.get("ids_instancias", []))
     if len(ids_base) != n:
         raise ValueError("Los IDs del baseline no coinciden con su tamaño.")
 
+    semilla = baseline_inicial.get("semilla")
+    evaluaciones_config_final = [
+        e for e in evaluaciones
+        if e.get("etapa") in {"baseline", "refinamiento"}
+        and int(e.get("instancias", 0)) == n
+        and e.get("configuracion") == config_base
+        and _normalizar_ids(e.get("ids_instancias", [])) == ids_base
+        and e.get("semilla") == semilla
+    ]
+    if not evaluaciones_config_final:
+        raise ValueError(
+            "No existe una evaluación completa de la configuración final "
+            "guardada en configuracion_actual sobre los mismos IDs y semilla."
+        )
+
+    # La última evaluación exacta de la configuración final es la referencia
+    # de complementariedad. En G1 v2 corresponde a 21/100, no al baseline
+    # inicial de 12/100.
+    baseline = evaluaciones_config_final[-1]
+    precision_guardada = data.get("precision_actual")
+    if precision_guardada is not None and abs(
+        float(precision_guardada) - float(baseline["precision"])
+    ) > 1e-12:
+        raise ValueError(
+            "precision_actual no coincide con la evaluación completa de "
+            "configuracion_actual en el historial."
+        )
+    if not isinstance(baseline.get("trazas"), list):
+        raise ValueError("La evaluación final no contiene trazas completas.")
+
     refinamientos = [
         e for e in evaluaciones
-        if e.get("etapa") == "refinamiento" and int(e.get("instancias", 0)) == n
+        if e.get("etapa") == "refinamiento"
+        and int(e.get("instancias", 0)) == n
+        and _normalizar_ids(e.get("ids_instancias", [])) == ids_base
+        and e.get("semilla") == semilla
     ]
 
     candidatos = []
@@ -103,13 +136,17 @@ def _cargar_historial_coordenadas(path):
             r for r in ranuras
             if config.get(r) != config_base.get(r)
         ]
+        # La propia configuración final tiene cero diferencias y no es un
+        # cambio candidato. Se conservan solo refinamientos de una ranura.
         if len(diferencias) != 1:
             continue
         ranura = diferencias[0]
         if registro.get("ranura") != ranura:
             continue
-        if _normalizar_ids(registro.get("ids_instancias", [])) != ids_base:
-            continue
+        if not isinstance(registro.get("trazas"), list):
+            raise ValueError(
+                f"El refinamiento de {ranura} no contiene trazas completas."
+            )
         candidatos.append({
             "ranura": ranura,
             "indice": int(config[ranura]),
@@ -120,7 +157,7 @@ def _cargar_historial_coordenadas(path):
         })
 
     if not candidatos:
-        raise ValueError("No se encontraron refinamientos individuales completos.")
+        raise ValueError("No se encontraron refinamientos individuales completos alrededor de la configuración final.")
     return config_base, baseline, candidatos
 
 
