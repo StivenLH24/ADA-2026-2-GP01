@@ -51,3 +51,30 @@ Una excepción del verificador no se contabiliza como incumplimiento: detiene el
 ## Alcance
 
 Es un diagnóstico posterior, no una nueva búsqueda. No modifica el catálogo, el oráculo, el historial ni la caché. La validación se utiliza exclusivamente para describir errores de la configuración ya elegida; no debe utilizarse para seleccionar otra configuración. Los CSV y reportes generados son artefactos locales del experimento y no se versionan junto con el código.
+
+## Resultados observados de la ejecución v2
+
+La ejecución completa con IFEvalG real examinó las 68 instancias fallidas y detectó 110 incumplimientos individuales. En 31 de las 68 respuestas (45,59 %) se encontraron dos o más restricciones incumplidas.
+
+Conteos por familia: `keywords` 24 (21,82 %), `punctuation` 14 (12,73 %), `detectable_format` 13 (11,82 %), `copy` 11 (10,00 %), `last_word` 9 (8,18 %), `length_constraints` 8 (7,27 %) y `letters` 8 (7,27 %). Las cuatro primeras familias concentran 62 de los 110 incumplimientos (56,36 %).
+
+Las restricciones individuales más frecuentes fueron `punctuation:punctuation_dot` (10), `last_word:last_word_sent` (7), `length_constraints:nth_paragraph_first_word` (6) y `copy:repeat_phrase` (6). Una respuesta puede contribuir a varios conteos.
+
+Los archivos se generaron en la carpeta de Drive `reporte_multirestriccion_G1_v2`. No se incorporan al repositorio los CSV con respuestas del modelo, porque son artefactos de ejecución. El resultado es descriptivo y no se utilizó para optimizar la configuración.
+
+## Coocurrencia entre restricciones
+
+El script `scripts/analizar_coocurrencia_multirrestriccion.py` toma `matriz_fallos_multirestriccion_G1_v2.csv` y genera:
+- `pares_coocurrencia_G1_v2.csv`: pares ordenados por frecuencia, soporte e índice Jaccard.
+- `matriz_coocurrencia_G1_v2.csv`: matriz simétrica de conteos conjuntos.
+- `reporte_coocurrencia_G1_v2.md`: resumen de los pares más frecuentes y alcance metodológico.
+
+Ejecución en Colab desde la raíz del repositorio:
+
+```bash
+python scripts/analizar_coocurrencia_multirrestriccion.py \
+  --matriz /content/drive/MyDrive/ADA_G1/reporte_multirestriccion_G1_v2/matriz_fallos_multirestriccion_G1_v2.csv \
+  --salida /content/drive/MyDrive/ADA_G1/reporte_coocurrencia_G1_v2
+```
+
+El soporte representa el porcentaje de respuestas fallidas en las que aparece el par. Jaccard se calcula como intersección dividida por unión de los conjuntos de instancias donde aparece cada restricción. Es una medida descriptiva y no implica causalidad. Los valores quedan pendientes de ejecutar sobre el CSV real; no se anticipan cifras.
