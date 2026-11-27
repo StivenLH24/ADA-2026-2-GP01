@@ -71,6 +71,6 @@ Las pruebas unitarias usan dobles de prueba y no cargan Qwen. El notebook de Col
 ## Limitaciones
 
 - Coordinate Search es una heurística local; no garantiza un óptimo global.
-- La validación visible contiene 87 instancias y no sustituye la evaluación privada del docente.
+- La validación visible contiene 87 instancias y no sustituye la evaluación privada del docente. El análisis multirrestricción es descriptivo; no se debe usar para seleccionar configuraciones.
 - El oráculo conserva la primera restricción incumplida. Para contar todos los incumplimientos de cada salida se debe ejecutar el diagnóstico multirrestricción.
 - La formalización y la reducción desde 3-SAT solicitadas por la guía deben demostrarse rigurosamente antes de afirmar NP-dureza.
